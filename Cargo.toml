@@ -1,0 +1,11 @@
+[package]
+name = "hosted-git-info"
+description = "Provides metadata and conversions from repository urls for GitHub, Bitbucket and GitLab"
+version = "0.0.0"
+edition = "2018"
+keywords = ["git", "github", "bitbucket", "gitlab"]
+license = "ISC"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
