@@ -1,10 +1,9 @@
 #![deny(clippy::unwrap_used)]
 
-use std::str;
-
 #[cfg(feature = "derive_builder")]
 use derive_builder::Builder;
 use percent_encoding::percent_decode_str;
+use std::str;
 use thiserror::Error;
 use url::Url;
 
@@ -30,6 +29,30 @@ pub enum Provider {
     Gist,
     GitHub,
     GitLab,
+}
+
+#[derive(Debug, Eq, PartialEq, Copy, Clone)]
+pub enum DefaultRepresentation {
+    Shortcut,
+    Git,
+    Https,
+    Ssh,
+    Other,
+}
+
+impl DefaultRepresentation {
+    fn from_scheme(scheme: &str) -> DefaultRepresentation {
+        use DefaultRepresentation::*;
+
+        match scheme {
+            "git" => Git,
+            "git+https" => Https,
+            "git+ssh" => Ssh,
+            "https" => Https,
+            "ssh" => Ssh,
+            _ => Other,
+        }
+    }
 }
 
 #[derive(Debug, Error)]
@@ -67,7 +90,9 @@ pub struct HostedGitInfo {
         builder(setter(into, strip_option), default)
     )]
     pub committish: Option<String>,
-    // default
+
+    #[cfg_attr(feature = "derive_builder", builder(setter(name = "repr")))]
+    pub default_representation: DefaultRepresentation,
 }
 
 impl HostedGitInfo {
@@ -190,7 +215,6 @@ impl HostedGitInfo {
                 .map(|committish| percent_decode_str(&committish).decode_utf8())
                 .transpose()?;
 
-            // TODO
             // defaultRepresentation = 'shortcut'
             Ok(Self {
                 provider: parser.provider(),
@@ -198,6 +222,7 @@ impl HostedGitInfo {
                 auth,
                 project: project.to_string(),
                 committish: committish.map(|s| s.to_string()),
+                default_representation: DefaultRepresentation::Shortcut,
             })
         } else {
             // if (!gitHostInfo.protocols.includes(parsed.protocol)) {
@@ -232,15 +257,14 @@ impl HostedGitInfo {
                 .map(|committish| percent_decode_str(&committish).decode_utf8())
                 .transpose()?;
 
-            // TODO
             // defaultRepresentation = protocolToRepresentation(parsed.protocol)
-
             Ok(Self {
                 provider: parser.provider(),
                 user: user.map(|s| s.to_string()),
                 auth,
                 project: project.to_string(),
                 committish: committish.map(|s| s.to_string()),
+                default_representation: DefaultRepresentation::from_scheme(parsed.scheme()),
             })
         }
         //   }
