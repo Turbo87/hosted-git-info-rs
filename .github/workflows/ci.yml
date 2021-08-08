@@ -1,22 +1,57 @@
 name: CI
-on: [push, pull_request]
-jobs:
-  test:
-    strategy:
-      fail-fast: false
-      matrix:
-        node-version: ['10.1', 10.x, '12.1', 12.x, '14.1', 14.x]
 
+on:
+  push:
+    branches:
+      - master
+      - main
+      - "v*"
+    tags:
+      - "v*"
+  pull_request:
+
+jobs:
+  check:
+    name: Check
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v2
-      with:
-        node-version: ${{ matrix.node-version }}
-    - name: Update npm
-      run: npm i -g npm
-    - name: Install dependencies
-      run: npm ci
-    - name: Run Tap tests
-      run: npm test
+      - uses: actions/checkout@v2
+      - run: rustup set profile minimal
+      - run: rustup show
+
+      - run: cargo check
+        env:
+          RUSTFLAGS: "-D warnings"
+
+      - run: cargo check --all-targets --features derive_builder
+        env:
+          RUSTFLAGS: "-D warnings"
+
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: rustup set profile minimal
+      - run: rustup show
+      - run: cargo test --features derive_builder
+
+  fmt:
+    name: Rustfmt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: rustup set profile minimal
+      - run: rustup show
+      - run: rustup component add rustfmt
+      - run: cargo fmt -- --check
+
+  clippy:
+    name: Clippy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: rustup set profile minimal
+      - run: rustup show
+      - run: rustup component add clippy
+      - run: cargo clippy -- --deny warnings --allow unknown-lints
