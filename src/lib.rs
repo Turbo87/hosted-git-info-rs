@@ -76,8 +76,6 @@ impl HostedGitInfo {
         //   return
         // }
 
-        dbg!(&giturl);
-
         // const url = isGitHubShorthand(giturl) ? 'github:' + giturl : correctProtocol(giturl)
         let url = if is_github_shorthand(giturl) {
             format!("github:{}", giturl)
@@ -85,18 +83,15 @@ impl HostedGitInfo {
             // correctProtocol(giturl)
             correct_protocol(giturl)
         };
-        dbg!(&url);
 
         // const parsed = parseGitUrl(url)
         // if (!parsed) {
         //   return parsed
         // }
         let parsed = parse_git_url(&url)?;
-        dbg!(&parsed);
 
         // const gitHostShortcut = gitHosts.byShortcut[parsed.protocol]
         let parser_from_shortcut = parser::parser_from_shortcut(parsed.scheme());
-        dbg!(&parser_from_shortcut);
 
         // const gitHostDomain = gitHosts.byDomain[parsed.hostname.startsWith('www.') ? parsed.hostname.slice(4) : parsed.hostname]
         let simplified_domain = parsed
@@ -104,7 +99,6 @@ impl HostedGitInfo {
             .map(|domain| domain.strip_prefix("www.").unwrap_or(domain));
         let parser_from_domain =
             simplified_domain.and_then(|domain| parser::parser_from_domain(domain));
-        dbg!(&parser_from_domain);
 
         // const gitHostName = gitHostShortcut || gitHostDomain
         let parser = parser_from_shortcut
@@ -120,7 +114,6 @@ impl HostedGitInfo {
             Some(parser) => parser,
             None => return Err(ParseError::UnknownUrl),
         };
-        dbg!(&parser);
 
         // let auth = null
         // if (authProtocols[parsed.protocol] && (parsed.username || parsed.password)) {
@@ -141,7 +134,6 @@ impl HostedGitInfo {
         } else {
             None
         };
-        dbg!(&auth);
 
         // let committish = null
         // let user = null
@@ -154,7 +146,6 @@ impl HostedGitInfo {
             // let pathname = parsed.pathname.startsWith('/') ? parsed.pathname.slice(1) : parsed.pathname
             let path = parsed.path();
             let mut pathname = path.strip_prefix('/').unwrap_or(path);
-            dbg!(&pathname);
 
             // const firstAt = pathname.indexOf('@')
             let first_at = pathname.find('@');
@@ -164,7 +155,6 @@ impl HostedGitInfo {
             // }
             if let Some(first_at) = first_at {
                 pathname = &pathname[first_at + 1..];
-                dbg!(&pathname);
             }
 
             // const lastSlash = pathname.lastIndexOf('/')
@@ -187,7 +177,6 @@ impl HostedGitInfo {
                 let project = percent_decode_str(&pathname).decode_utf8()?;
                 (None, project)
             };
-            dbg!(&user, &project);
 
             let project = project
                 .strip_suffix(".git")
@@ -223,7 +212,6 @@ impl HostedGitInfo {
             //   return
             // }
             let segments = parser.extract(&parsed)?;
-            dbg!(&segments);
 
             // user = segments.user && decodeURIComponent(segments.user)
             let user = segments
@@ -393,8 +381,6 @@ fn parse_git_url(giturl: &str) -> Result<Url, url::ParseError> {
 
 // attempt to correct an scp style url so that it will parse with `new URL()`
 fn correct_url(giturl: &str) -> Option<String> {
-    dbg!(&giturl);
-
     // const firstAt = giturl.indexOf('@')
     let first_at = giturl.find('@');
     // const lastHash = giturl.lastIndexOf('#')
@@ -449,7 +435,6 @@ fn correct_url(giturl: &str) -> Option<String> {
         corrected = corrected.map(|corrected| format!("git+ssh://{}", corrected));
     }
 
-    dbg!(&corrected);
     // return corrected
     corrected
 }
