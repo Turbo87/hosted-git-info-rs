@@ -55,7 +55,7 @@ impl DefaultRepresentation {
     }
 }
 
-#[derive(Debug, Error)]
+#[derive(PartialEq, Eq, Clone, Copy, Debug, Error)]
 pub enum ParseError {
     #[error("Failed to parse URL")]
     InvalidUrl(#[from] url::ParseError),
