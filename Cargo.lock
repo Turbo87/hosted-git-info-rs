@@ -101,7 +101,7 @@ dependencies = [
 
 [[package]]
 name = "hosted-git-info"
-version = "0.0.0"
+version = "0.1.0"
 dependencies = [
  "claim",
  "derive_builder",
