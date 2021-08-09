@@ -8,7 +8,7 @@ and [GitLab].
 [Bitbucket]: https://www.bitbucket.org/
 [GitLab]: https://www.gitlab.com/
 
-__This is the [Rust] port of the original [hosted-git-info] project on [npm].__
+__This is a [Rust] port of the original [hosted-git-info] project on [npm].__
 
 [Rust]: https://www.rustlang.org/
 [hosted-git-info]: https://github.com/npm/hosted-git-info
@@ -26,12 +26,12 @@ Usage
 use hosted_git_info::HostedGitInfo;
 
 fn main() {
-  let url = "https://github.com/foo/bar.git#branch";
-  let info = HostedGitInfo::from_url(url).unwrap();
-  // info.provider = Provider::GitHub
-  // info.user = "foo"
-  // info.project = "bar"
-  // info.committish = "branch"
+    let url = "https://github.com/foo/bar.git#branch";
+    let info = HostedGitInfo::from_url(url).unwrap();
+    assert_eq!(info.provider, Provider::GitHub);
+    assert_eq!(info.user, Some("foo"));
+    assert_eq!(info.project, "bar");
+    assert_eq!(info.committish, Some("branch"));
 }
 ```
 
