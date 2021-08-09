@@ -38,6 +38,20 @@
 //! assert_eq!(info.committish(), Some("branch"));
 //! assert_eq!(info.auth(), None);
 //! ```
+//!
+//! [HostedGitInfo] also implements the [str::FromStr] trait:
+//!
+//! ```
+//! use hosted_git_info::{HostedGitInfo, Provider};
+//!
+//! let url = "git+ssh://github.com:foo/bar.git";
+//! let info: HostedGitInfo = url.parse().unwrap();
+//! assert_eq!(info.provider(), Provider::GitHub);
+//! assert_eq!(info.user(), Some("foo"));
+//! assert_eq!(info.project(), "bar");
+//! assert_eq!(info.committish(), None);
+//! assert_eq!(info.auth(), None);
+//! ```
 
 #![deny(clippy::unwrap_used)]
 
@@ -385,6 +399,14 @@ impl HostedGitInfo {
     /// Example: `https://github.com/Turbo87/hosted-git-info-rs.git` → `Https`
     pub fn default_representation(&self) -> DefaultRepresentation {
         self.default_representation
+    }
+}
+
+impl str::FromStr for HostedGitInfo {
+    type Err = ParseError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        HostedGitInfo::from_url(s)
     }
 }
 
