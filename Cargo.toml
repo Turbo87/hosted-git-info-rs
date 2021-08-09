@@ -1,7 +1,7 @@
 [package]
 name = "hosted-git-info"
 description = "Provides metadata and conversions from repository urls for GitHub, Bitbucket and GitLab"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Tobias Bieniek <tobias.bieniek@gmail.com>"]
 repository = "https://github.com/Turbo87/hosted-git-info-rs.git"
 edition = "2018"

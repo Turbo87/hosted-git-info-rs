@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.1.1 (2021-08-09)
+
+#### :house: Internal
+* [#11](https://github.com/Turbo87/hosted-git-info-rs/pull/11) Cargo.toml: Only package the `src` folder ([@Turbo87](https://github.com/Turbo87))
+
+#### Committers: 1
+- Tobias Bieniek ([@Turbo87](https://github.com/Turbo87))
+
+
 ## v0.1.0 (2021-08-09)
 
 * [48699a2](https://github.com/Turbo87/hosted-git-info-rs/commit/48699a2) Initial Rust port :tada: ([@Turbo87](https://github.com/Turbo87))
