@@ -32,11 +32,11 @@
 //!
 //! let url = "https://github.com/foo/bar.git#branch";
 //! let info = HostedGitInfo::from_url(url).unwrap();
-//! assert_eq!(info.provider, Provider::GitHub);
-//! assert_eq!(info.user.unwrap(), "foo");
-//! assert_eq!(info.project, "bar");
-//! assert_eq!(info.committish.unwrap(), "branch");
-//! assert_eq!(info.auth, None);
+//! assert_eq!(info.provider(), Provider::GitHub);
+//! assert_eq!(info.user(), Some("foo"));
+//! assert_eq!(info.project(), "bar");
+//! assert_eq!(info.committish(), Some("branch"));
+//! assert_eq!(info.auth(), None);
 //! ```
 
 #![deny(clippy::unwrap_used)]
@@ -127,53 +127,31 @@ pub enum ParseError {
 #[derive(Debug, Eq, PartialEq, Clone)]
 #[cfg_attr(feature = "derive_builder", derive(Builder))]
 pub struct HostedGitInfo {
-    /// The type of hosting provider. (GitHub, Gitlab, Bitbucket, ...)
-    pub provider: Provider,
+    provider: Provider,
 
-    /// The name of the user or organization on the git host.
-    ///
-    /// This is using an [Option] because some hosting providers allow projects
-    /// that are not scoped to a particular user or organization.
-    ///
-    /// Example: `https://github.com/Turbo87/hosted-git-info-rs.git` → `Turbo87`
     #[cfg_attr(
         feature = "derive_builder",
         builder(setter(into, strip_option), default)
     )]
-    pub user: Option<String>,
+    user: Option<String>,
 
-    /// The authentication part of the URL, if it exists.
-    ///
-    /// Format: `<USER>[:<PASSWORD>]`
-    ///
-    /// Example: `https://user:password@github.com/foo/bar.git` → `user:password`
     #[cfg_attr(
         feature = "derive_builder",
         builder(setter(into, strip_option), default)
     )]
-    pub auth: Option<String>,
+    auth: Option<String>,
 
-    /// The name of the project on the git host.
-    ///
-    /// Example: `https://github.com/Turbo87/hosted-git-info-rs.git` → `hosted-git-info-rs`
     #[cfg_attr(feature = "derive_builder", builder(setter(into)))]
-    pub project: String,
+    project: String,
 
-    /// The [branch, tag, commit, ...](https://git-scm.com/docs/gitglossary#Documentation/gitglossary.txt-aiddefcommit-ishacommit-ishalsocommittish)
-    /// part of the URL, if it exists.
-    ///
-    /// Example: `https://github.com/Turbo87/hosted-git-info-rs.git#rust-is-awesome` → `rust-is-awesome`
     #[cfg_attr(
         feature = "derive_builder",
         builder(setter(into, strip_option), default)
     )]
-    pub committish: Option<String>,
+    committish: Option<String>,
 
-    /// The original URL type (shortcut, https, ssh, ...).
-    ///
-    /// Example: `https://github.com/Turbo87/hosted-git-info-rs.git` → `Https`
     #[cfg_attr(feature = "derive_builder", builder(setter(name = "repr")))]
-    pub default_representation: DefaultRepresentation,
+    default_representation: DefaultRepresentation,
 }
 
 impl HostedGitInfo {
@@ -361,6 +339,52 @@ impl HostedGitInfo {
         // }
         //
         // return new GitHost(gitHostName, user, auth, project, committish, defaultRepresentation, opts)
+    }
+
+    /// The type of hosting provider. (GitHub, Gitlab, Bitbucket, ...)
+    pub fn provider(&self) -> Provider {
+        self.provider
+    }
+
+    /// The name of the user or organization on the git host.
+    ///
+    /// This is using an [Option] because some hosting providers allow projects
+    /// that are not scoped to a particular user or organization.
+    ///
+    /// Example: `https://github.com/Turbo87/hosted-git-info-rs.git` → `Turbo87`
+    pub fn user(&self) -> Option<&str> {
+        self.user.as_deref()
+    }
+
+    /// The authentication part of the URL, if it exists.
+    ///
+    /// Format: `<USER>[:<PASSWORD>]`
+    ///
+    /// Example: `https://user:password@github.com/foo/bar.git` → `user:password`
+    pub fn auth(&self) -> Option<&str> {
+        self.auth.as_deref()
+    }
+
+    /// The name of the project on the git host.
+    ///
+    /// Example: `https://github.com/Turbo87/hosted-git-info-rs.git` → `hosted-git-info-rs`
+    pub fn project(&self) -> &str {
+        &self.project
+    }
+
+    /// The [branch, tag, commit, ...](https://git-scm.com/docs/gitglossary#Documentation/gitglossary.txt-aiddefcommit-ishacommit-ishalsocommittish)
+    /// part of the URL, if it exists.
+    ///
+    /// Example: `https://github.com/Turbo87/hosted-git-info-rs.git#rust-is-awesome` → `rust-is-awesome`
+    pub fn committish(&self) -> Option<&str> {
+        self.committish.as_deref()
+    }
+
+    /// The original URL type (shortcut, https, ssh, ...).
+    ///
+    /// Example: `https://github.com/Turbo87/hosted-git-info-rs.git` → `Https`
+    pub fn default_representation(&self) -> DefaultRepresentation {
+        self.default_representation
     }
 }
 
