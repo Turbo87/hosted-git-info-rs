@@ -1,3 +1,44 @@
+//! hosted-git-info is a [Rust] port of the original [hosted-git-info] project on [npm].
+//!
+//! [Rust]: https://www.rustlang.org/
+//! [hosted-git-info]: https://github.com/npm/hosted-git-info
+//! [npm]: https://www.npmjs.com
+//!
+//! It provides metadata and conversions from repository urls for [GitHub], [Bitbucket]
+//! and [GitLab].
+//!
+//! [GitHub]: https://github.com/
+//! [Bitbucket]: https://www.bitbucket.org/
+//! [GitLab]: https://www.gitlab.com/
+//!
+//! It will let you identify and transform various git hosts URLs between
+//! protocols. It also can tell you what the URL is for the raw path for
+//! particular file for direct access without git.
+//!
+//! # Usage
+//!
+//! First, URL parsing may fail for various reasons and therefore returns a `Result`:
+//!
+//! ```
+//! use hosted_git_info::{HostedGitInfo, ParseError};
+//!
+//! assert!(HostedGitInfo::from_url("https://www.rustlang.org/") == Err(ParseError::UnknownUrl));
+//! ```
+//!
+//! Let’s parse a valid URL and look at its components.
+//!
+//! ```
+//! use hosted_git_info::{HostedGitInfo, Provider};
+//!
+//! let url = "https://github.com/foo/bar.git#branch";
+//! let info = HostedGitInfo::from_url(url).unwrap();
+//! assert_eq!(info.provider, Provider::GitHub);
+//! assert_eq!(info.user.unwrap(), "foo");
+//! assert_eq!(info.project, "bar");
+//! assert_eq!(info.committish.unwrap(), "branch");
+//! assert_eq!(info.auth, None);
+//! ```
+
 #![deny(clippy::unwrap_used)]
 
 #[cfg(feature = "derive_builder")]
@@ -23,20 +64,31 @@ static KNOWN_SCHEMES: [&str; 10] = [
     "gitlab",
 ];
 
+/// Enum of supported git hosting providers.
 #[derive(Debug, Eq, PartialEq, Copy, Clone)]
 pub enum Provider {
+    /// see <https://www.bitbucket.org/>
     BitBucket,
+    /// see <https://gist.github.com/>
     Gist,
+    /// see <https://github.com/>
     GitHub,
+    /// see <https://www.gitlab.com/>
     GitLab,
 }
 
+/// Enum of the original URL types (shortcut, https, ssh, ...)
 #[derive(Debug, Eq, PartialEq, Copy, Clone)]
 pub enum DefaultRepresentation {
+    /// Example: `Turbo87/hosted-git-info-rs`
     Shortcut,
+    /// Example: `git://github.com/Turbo87/hosted-git-info-rs`
     Git,
+    /// Example: `https://github.com/Turbo87/hosted-git-info-rs.git`
     Https,
+    /// Example: `git+ssh://git@github.com:Turbo87/hosted-git-info-rs.git`
     Ssh,
+    /// anything else 🤷‍
     Other,
 }
 
@@ -55,47 +107,78 @@ impl DefaultRepresentation {
     }
 }
 
+/// Errors that can occur during parsing.
 #[derive(PartialEq, Eq, Clone, Copy, Debug, Error)]
 pub enum ParseError {
+    /// Failed to parse the URL with the `url` crate.
     #[error("Failed to parse URL")]
     InvalidUrl(#[from] url::ParseError),
+
+    /// Failed to parse a part of the URL with the `percent_encoding` crate.
     #[error("Failed to parse percent-encoded URI component")]
     InvalidUriEncoding(#[from] str::Utf8Error),
+
+    /// The URL could not be recognized.
     #[error("Failed to recognize URL")]
     UnknownUrl,
 }
 
+/// The parsed information from a git hosting URL.
 #[derive(Debug, Eq, PartialEq, Clone)]
 #[cfg_attr(feature = "derive_builder", derive(Builder))]
 pub struct HostedGitInfo {
+    /// The type of hosting provider. (GitHub, Gitlab, Bitbucket, ...)
     pub provider: Provider,
 
+    /// The name of the user or organization on the git host.
+    ///
+    /// This is using an [Option] because some hosting providers allow projects
+    /// that are not scoped to a particular user or organization.
+    ///
+    /// Example: `https://github.com/Turbo87/hosted-git-info-rs.git` → `Turbo87`
     #[cfg_attr(
         feature = "derive_builder",
         builder(setter(into, strip_option), default)
     )]
     pub user: Option<String>,
 
+    /// The authentication part of the URL, if it exists.
+    ///
+    /// Format: `<USER>[:<PASSWORD>]`
+    ///
+    /// Example: `https://user:password@github.com/foo/bar.git` → `user:password`
     #[cfg_attr(
         feature = "derive_builder",
         builder(setter(into, strip_option), default)
     )]
     pub auth: Option<String>,
 
+    /// The name of the project on the git host.
+    ///
+    /// Example: `https://github.com/Turbo87/hosted-git-info-rs.git` → `hosted-git-info-rs`
     #[cfg_attr(feature = "derive_builder", builder(setter(into)))]
     pub project: String,
 
+    /// The [branch, tag, commit, ...](https://git-scm.com/docs/gitglossary#Documentation/gitglossary.txt-aiddefcommit-ishacommit-ishalsocommittish)
+    /// part of the URL, if it exists.
+    ///
+    /// Example: `https://github.com/Turbo87/hosted-git-info-rs.git#rust-is-awesome` → `rust-is-awesome`
     #[cfg_attr(
         feature = "derive_builder",
         builder(setter(into, strip_option), default)
     )]
     pub committish: Option<String>,
 
+    /// The original URL type (shortcut, https, ssh, ...).
+    ///
+    /// Example: `https://github.com/Turbo87/hosted-git-info-rs.git` → `Https`
     #[cfg_attr(feature = "derive_builder", builder(setter(name = "repr")))]
     pub default_representation: DefaultRepresentation,
 }
 
 impl HostedGitInfo {
+    /// Parses a URL string and returns a [HostedGitInfo] struct, if successful.
+    /// If parsing fails, a [ParseError] will be returned.
     pub fn from_url(giturl: &str) -> Result<Self, ParseError> {
         // if (!giturl) {
         //   return
