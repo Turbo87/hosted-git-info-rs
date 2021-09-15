@@ -451,7 +451,7 @@ fn is_github_shorthand(arg: &str) -> bool {
 
     // const doesNotEndWithSlash = firstHash > -1 ? arg[firstHash - 1] !== '/' : !arg.endsWith('/')
     let does_not_end_with_slash = if let Some(first_hash) = first_hash {
-        arg.as_bytes().get(first_hash - 1) != Some(&b'/')
+        first_hash == 0 || arg.as_bytes().get(first_hash - 1) != Some(&b'/')
     } else {
         !arg.ends_with('/')
     };
