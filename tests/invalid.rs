@@ -15,5 +15,6 @@ fn invalid() {
     check_err("git+file:///foo/bar");
     check_err("git+ssh://git@git.unlucky.com:RND/electron-tools/some-tool#2.0.1");
     check_err("::");
+    check_err("#");
     check_err("");
 }
