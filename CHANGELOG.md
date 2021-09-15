@@ -1,5 +1,20 @@
 # Changelog
 
+## v0.1.2 (2021-09-15)
+
+#### :rocket: Enhancement
+* [#12](https://github.com/Turbo87/hosted-git-info-rs/pull/12) Implement `FromStr` trait ([@Turbo87](https://github.com/Turbo87))
+
+#### :bug: Bug Fix
+* [#13](https://github.com/Turbo87/hosted-git-info-rs/pull/13) Fix panic on `#` input ([@Turbo87](https://github.com/Turbo87))
+
+#### :house: Internal
+* [#14](https://github.com/Turbo87/hosted-git-info-rs/pull/14) Add fuzzing tests based on `proptest` ([@Turbo87](https://github.com/Turbo87))
+
+#### Committers: 1
+- Tobias Bieniek ([@Turbo87](https://github.com/Turbo87))
+
+
 ## v0.1.1 (2021-08-09)
 
 #### :house: Internal
