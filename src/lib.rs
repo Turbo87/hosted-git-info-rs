@@ -64,6 +64,9 @@ use url::Url;
 
 mod parser;
 
+#[cfg(test)]
+mod proptest;
+
 static AUTH_SCHEMES: [&str; 5] = ["git", "https", "git+https", "http", "git+http"];
 static KNOWN_SCHEMES: [&str; 10] = [
     "http",
