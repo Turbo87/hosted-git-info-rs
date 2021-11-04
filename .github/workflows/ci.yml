@@ -10,14 +10,17 @@ on:
       - "v*"
   pull_request:
 
+env:
+  # Minimum Supported Rust Version
+  MSRV: 1.46.0
+
 jobs:
   check:
     name: Check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: rustup set profile minimal
-      - run: rustup show
+      - run: rustup default ${{ env.MSRV }}
 
       - run: cargo check
         env:
@@ -32,8 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: rustup set profile minimal
-      - run: rustup show
+      - run: rustup default ${{ env.MSRV }}
       - run: cargo test --features derive_builder
 
   fmt:
@@ -41,8 +43,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: rustup set profile minimal
-      - run: rustup show
+      - run: rustup default ${{ env.MSRV }}
       - run: rustup component add rustfmt
       - run: cargo fmt -- --check
 
@@ -51,7 +52,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: rustup set profile minimal
-      - run: rustup show
+      - run: rustup default ${{ env.MSRV }}
       - run: rustup component add clippy
       - run: cargo clippy -- --deny warnings --allow unknown-lints
